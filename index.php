@@ -1,5 +1,5 @@
 <?php
-  $connect    = mysqli_connect("mysql.yaacotu.com", "yourusername", "yourpassword","fed_db_yourname");
+  $connect    = mysqli_connect("mysql.yaacotu.com", "jmalik2", "Jm0885175","fed_db_justin");
   $query      = "SELECT * FROM INV_TYPE ORDER BY TYPE_DESCRIPTION ASC";
 ?>
 <!DOCTYPE html>
@@ -41,10 +41,16 @@
       .table-striped {
           min-width: rem-calc(640);
       }
-      .add_button_holder {
+      .add_button_holder , .override_button_holder {
           max-width: 100px;
           float: right;
       }
+
+      .override_button_holder {
+        margin-left:2rem;
+      }
+
+
       .col-sm-6 {
           max-width: 200px;
       }
@@ -67,6 +73,9 @@
 
         <br>
         <div class="horizontal-scroll">
+        <div class= "override_button_holder" align="right">
+            <button type="button" id="override_button" data-toggle="modal" data-target="#overrideModal" class="btn btn-warning">Override</button>
+        </div>
           <div class= "add_button_holder" align="right">
             <button type="button" id="add_button" data-toggle="modal" data-target="#userModal" class="btn btn-info">Add</button>
           </div>
@@ -139,6 +148,10 @@
           <input type="text" name="quantity" id="quantity" class="form-control" autocomplete="off"/>
           <span id="valid_quantity"></span>
           <br />
+          <label>Add Quantity</label>
+          <input type="text" name="addQuantity" id="addQuantity" class="form-control" autocomplete="off"/>
+          <span id="valid_quantity"></span>
+          <br />
           <label>Image Location</label>
           <input type="text" name="image_location" id="image_location" class="form-control" autocomplete="off" />
           <br />
@@ -149,7 +162,7 @@
           <input type="hidden" name="user_id" id="user_id" />
           <input type="hidden" name="operation" id="operation" />
           <button type ="button" name ="fetch" id ="fetch" class = "btn btn-success" style ="float: left;">Fetch Data</button>
-          <input type="submit" name="action" id="action" class="btn btn-success" value="Add" />
+          <input type="submit" name="action" id="action" class="btn btn-success addbtn" value="Add" />
 
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         </div>
@@ -157,6 +170,86 @@
     </form>
   </div>
 </div>
+
+
+
+<div id="overrideModal" class="modal fade">
+  <div class="modal-dialog">
+    <form method="post" id="user_override_form" enctype="multipart/form-data">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="override-modal-title">Override Item</h4>
+        </div>
+        <div class="modal-body">
+          <img id="itemimage" name = "itemimage" style ="display: block; margin-left: auto; margin-right: auto; max-width: 300px; max-height: 300px; object-fit: scale-down;">
+          <label>Description</label>
+          <input type="text" name="description" id="override_description" class="form-control" autocomplete="off" />
+          <span id="valid_description"></span>
+          <br />
+          <label>Food Type</label>
+          <select name = "foodtype" id="override_foodtype" class ="form-control">
+            <?php
+              $result     = mysqli_query($connect,$query);
+                while ($row = mysqli_fetch_array($result)){
+                  echo '<option value = "'.$row["TYPE_ID"].'">'.$row["TYPE_DESCRIPTION"].'</option>';
+                }
+              mysqli_free_result($result);
+              mysqli_free_result($row);
+            ?>
+
+          </select>
+          <br />
+          <label>Quantity</label>
+          <input type="text" name="quantity" id="override_quantity" class="form-control" autocomplete="off"/>
+          <span id="valid_quantity"></span>
+          <br />
+          <label>Add Quantity</label>
+          <input type="text" name="addQuantity" id="addQuantity" class="form-control" autocomplete="off"/>
+          <span id="valid_quantity"></span>
+          <br />
+          <label>Image Location</label>
+          <input type="text" name="image_location" id="override_image_location" class="form-control" autocomplete="off" />
+          <br />
+          <span id="additional_info"></span>
+          <br />
+        </div>
+        <div class="modal-footer">
+          <input type="hidden" name="user_id" id="user_id" />
+          <input type="hidden" name="operation" id="Override-operation" />
+          <button type ="button" name ="fetch" id ="fetch" class = "btn btn-success" style ="float: left;">Fetch Data</button>
+          <input type="submit" name="action" id="override" class="btn btn-warning overridebtn" value="Override"/>
+
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <script type="text/javascript" language="javascript" >
 $(document).ready(function(){
@@ -223,7 +316,22 @@ $(document).ready(function(){
     $('.modal-title').text("Add Item");
     $('#action').val("Add");
     $('#operation').val("Add");
+    console.log($('#operation').val());
   });
+
+
+  $('#override_button').click(function() {
+    resetErrorMessages();
+    $('#fetch').css('display','block');
+    $('#upc').val('');
+    $('#user_override_form')[0].reset();
+    $('#itemimage').css('display','none');
+    $('.override-modal-title').text("Override Item");
+    $('#action').val("override");
+    $('#Override-operation').val("Override");
+  });
+
+ 
     
 	
   function load_data (is_category) { //2
@@ -257,6 +365,10 @@ $(document).ready(function(){
       load_data();
     }
   });
+  
+
+
+
 
   $(document).on('submit', '#user_form', function(event) {
     event.preventDefault();
@@ -266,7 +378,6 @@ $(document).ready(function(){
     $('#user_id').val(user_id);
     var food_type=$('#foodtype').val();
     var product_image = $('#image_location').val();
-    
     if(user_id !='' && description != '' && quantity != '' && food_type != 0) {
       $.ajax({
         url:"insert.php",
@@ -275,6 +386,7 @@ $(document).ready(function(){
         contentType:false,
         processData:false,
         success:function(data) {
+          console.log(data);
           alert(data);
           $('#user_form')[0].reset();
           $('#userModal').modal('hide');
@@ -283,7 +395,7 @@ $(document).ready(function(){
           if(category !=''){
             load_data(category);
           }
-          else{
+          else{ 
             load_data();
           }
         }
@@ -291,9 +403,62 @@ $(document).ready(function(){
     }
     else
     {
+      console.log(description);
       alert("Please fill in the UPC, Description, Quantity and select the food type");
+      alert("If you don't have a UPC , Please use the override button");
     }
   });
+
+
+
+
+  $(document).on('submit', '#user_override_form', function(event) {
+    event.preventDefault();
+    var description = $('#override_description').val();
+    var quantity = $('#override_quantity').val();
+    var food_type=$('#override_foodtype').val();
+    var product_image = $('#override_image_location').val();
+    if(description != '' && quantity != '' && food_type != 0) {
+      $.ajax({
+        url:"insert.php",
+        method:'POST',
+        data:new FormData(this),
+        contentType:false,
+        processData:false,
+        success:function(data) {
+          console.log(data);
+          alert(data);
+          $('#user_override_form')[0].reset();
+          $('#overrideModal').modal('hide');
+          $('#user_data').DataTable().destroy();
+          var category = $('#category').val();
+          if(category !=''){
+            load_data(category);
+          }
+          else{ 
+            load_data();
+          }
+        },
+        failure:function(err) {
+          alert(err);
+        }
+      });
+    }
+    else
+    {
+      console.log(description);
+      alert("Please fill in the Description, Quantity and select the food type");
+    }
+  });
+
+
+
+
+
+
+
+
+
 	
   $(document).on('click','#fetch', function(event){
     event.preventDefault();
@@ -399,7 +564,8 @@ $(document).ready(function(){
       method:"POST",
       data:{user_id:user_id},
       dataType:"json",
-      success:function(data) {
+      success:function(data) { 
+        console.log(data);
         $('#userModal').modal('show');
         $('#action').val("Edit");
         $('#operation').val("Edit");

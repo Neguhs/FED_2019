@@ -5,6 +5,7 @@ if(isset($_POST["operation"]))
 {
 	if($_POST["operation"] == "Add")
 	{
+        echo 'Hello';
         $output = array();
         $output["upc_exists"] = does_upc_exist($_POST["user_id"]);
         $output["valid_upc"] = is_upc_valid($_POST["user_id"]);
@@ -28,14 +29,17 @@ if(isset($_POST["operation"]))
                     ':type_id'      =>  $_POST["foodtype"]
                 )
             );
-            if(!empty($result)){
-                echo 'Data Inserted.';
-            } 
+            // if(!empty($result)){
+                // echo 'Data Inserted. $_POST["description"]';
+            // } 
         }
-        else{
-            echo ' Data not Inserted';
-        }
-	}
+        // else{
+        //     echo ' Data not Inserted';
+        // }
+    }
+    
+
+
 
 	if($_POST["operation"] == "Edit")
 	{
@@ -47,7 +51,7 @@ if(isset($_POST["operation"]))
 		$result = $statement->execute(
 			array(
 				':description'	=>	$_POST["description"],
-				':quantity'	    =>	$_POST["quantity"],
+				':quantity'	    =>	$_POST["quantity"] + 1,
 				':image'		=>	$_POST["image_location"],
 				':UPC'			=>	$_POST["user_id"],
                 ':type_id'      =>  $_POST["foodtype"]
@@ -57,7 +61,33 @@ if(isset($_POST["operation"]))
 		{
 			echo 'Data Updated';
 		}
-	}
+    }
+
+
+    
+
+    if($_POST["operation"] == "Override") {
+
+        $statement = $connection->prepare(
+            "INSERT INTO UPC_GENERATOR2(GENERIC_UPC_ID)
+            VALUES (:description)"  
+        );
+        $result = $statement->execute(
+            array(
+                ':description' => ""
+            )
+        );
+        if(!empty($result))
+        {
+            echo 'Data Sent';
+        } else {
+            echo 'Failed';
+        }
+        
+    }
+
+
+
 }
 
 ?>
