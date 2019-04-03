@@ -1,5 +1,5 @@
 <?php
-  $connect    = mysqli_connect("mysql.yaacotu.com", "jmalik2", "Jm0885175","fed_db_justin");
+  $connect    = mysqli_connect("mysql.yaacotu.com", "yourusername", "yourpassword","fed_db_yourname");
   $query      = "SELECT * FROM INV_TYPE ORDER BY TYPE_DESCRIPTION ASC";
 ?>
 <!DOCTYPE html>
